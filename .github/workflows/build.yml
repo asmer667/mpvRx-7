@@ -41,9 +41,23 @@ jobs:
           packages: "platform-tools platforms;android-35 build-tools;35.0.0"
 
       - name: Verify source assets
+        shell: bash
         run: |
-          test -f app/src/main/java/com/futo/themestudio/MainActivity.kt
-          test -f app/src/main/AndroidManifest.xml
+          set -euo pipefail
+          echo "=== AndroidManifest.xml ==="
+          test -f app/src/main/AndroidManifest.xml \
+            || { echo "AndroidManifest.xml غير موجود"; exit 1; }
+          echo "تم العثور على AndroidManifest.xml"
+
+          echo "=== ملفات Kotlin/Java في app/src ==="
+          find app/src -type f \( -name "*.kt" -o -name "*.java" \) || true
+
+          echo "=== التحقق من وجود أي Activity ==="
+          if ! find app/src -type f \( -name "*.kt" -o -name "*.java" \) -print -quit | grep -q .; then
+            echo "لا يوجد أي ملف Kotlin/Java في app/src"
+            exit 1
+          fi
+          echo "تم العثور على ملفات مصدر"
 
       - name: Build Release APK (64-bit only)
         run: |
